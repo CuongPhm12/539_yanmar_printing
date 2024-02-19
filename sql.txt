@@ -1,0 +1,187 @@
+SELECT    
+    {ym_ser} as ym_ser,
+    {prod_type1_ser} prod_type1_ser,
+    {carcass_cd_ser} carcass_cd_ser, 
+  
+    case when a.carcass_cd_temp is null then 'Y' else 'N' end readonly_yn,
+    case when a.etc1_temp is null and a.carcass_cd_temp is null then 'Total' else a.etc1_temp end etc1,
+    case when a.etc1_temp is null and a.carcass_cd_temp is null then '' 
+        when a.carcass_cd_temp is null then 'SubTotal'
+        else a.sales_cd_temp end sales_cd,
+    case when a.carcass_cd_temp is null then null else a.yag_temp end yag,
+    case when a.carcass_cd_temp is null then null else a.prod_type1_temp end prod_type1,
+    case when a.carcass_cd_temp is null then null else a.prod_type2_temp end prod_type2,
+    case when a.carcass_cd_temp is null then null else a.prod_type3_temp end prod_type3,
+    case when a.carcass_cd_temp is null then null else a.carcass_cd_temp end carcass_cd,
+    case when a.carcass_cd_temp is null then null else a.fg_cd_temp end fg_cd,
+    a.* 
+from (
+    select
+        1 sort_no,
+        c.plan_sort plan_sort,
+        '전체' sale_dept_cd,
+        c.item_cd,
+        c.prod_type,
+        c.yag as yag_temp,
+        c.prod_type1 as prod_type1_temp,
+        c.prod_type2 as prod_type2_temp,
+        c.prod_type3 as prod_type3_temp,
+        c.etc1 etc1_temp,
+        c.etc2,
+        c.carcass_cd as carcass_cd_temp,
+        c.fg_cd as fg_cd_temp,
+    	c.sales_cd sales_cd_temp,
+    	
+    	IFNULL(SUM(b.qty_sum), 0) month_plan,
+    	IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd)) , 0) month_result,
+        ifnull((select ROUND(cost_amount, 0) from tb_ma_manufacture_cost where option = 'WT' and item_cd = c.item_cd order by updatedate desc limit 1),
+    	    (select ROUND(cost_amount, 0) from tb_ma_manufacture_cost where option = 'default' and item_cd = c.item_cd order by updatedate desc limit 1)
+    	) cost_amount,
+		IFNULL(SUM(b.qty_01), 0) qty_01,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '01')), 0) result_qty_01,
+		IFNULL(SUM(b.qty_01 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '01')), 0) diff_qty_01,
+		
+		IFNULL(SUM(b.qty_02), 0) qty_02,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '02')), 0) result_qty_02,
+		IFNULL(SUM(b.qty_02 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '02')), 0) diff_qty_02,
+		
+		IFNULL(SUM(b.qty_03), 0) qty_03,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '03')), 0) result_qty_03,
+		IFNULL(SUM(b.qty_03 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '03')), 0) diff_qty_03,
+		
+		IFNULL(SUM(b.qty_04), 0) qty_04,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '04')), 0) result_qty_04,
+		IFNULL(SUM(b.qty_04 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '04')), 0) diff_qty_04,
+		
+		IFNULL(SUM(b.qty_05), 0) qty_05,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '05')), 0) result_qty_05,
+		IFNULL(SUM(b.qty_05 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '05')), 0) diff_qty_05,
+		
+		IFNULL(SUM(b.qty_06), 0) qty_06,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '06')), 0) result_qty_06,
+		IFNULL(SUM(b.qty_06 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '06')), 0) diff_qty_06,
+		
+		IFNULL(SUM(b.qty_07), 0) qty_07,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '07')), 0) result_qty_07,
+		IFNULL(SUM(b.qty_07 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '07')), 0) diff_qty_07,
+		
+		IFNULL(SUM(b.qty_08), 0) qty_08,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '08')), 0) result_qty_08,
+		IFNULL(SUM(b.qty_08 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '08')), 0) diff_qty_08,		
+
+		IFNULL(SUM(b.qty_09), 0) qty_09,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '09')), 0) result_qty_09,
+		IFNULL(SUM(b.qty_09 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '09')), 0) diff_qty_09,		
+		
+		IFNULL(SUM(b.qty_10), 0) qty_10,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '10')), 0) result_qty_10,
+		IFNULL(SUM(b.qty_10 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '10')), 0) diff_qty_10,
+		
+		IFNULL(SUM(b.qty_11), 0) qty_11,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '11')), 0) result_qty_11,
+		IFNULL(SUM(b.qty_11 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '11')), 0) diff_qty_11,
+		
+		IFNULL(SUM(b.qty_12), 0) qty_12,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '12')), 0) result_qty_12,
+		IFNULL(SUM(b.qty_12 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '12')), 0) diff_qty_12,
+		
+		IFNULL(SUM(b.qty_13), 0) qty_13,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '13')), 0) result_qty_13,
+		IFNULL(SUM(b.qty_13 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '13')), 0) diff_qty_13,
+		
+		IFNULL(SUM(b.qty_14), 0) qty_14,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '01')), 0) result_qty_14,
+		IFNULL(SUM(b.qty_14 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '14')), 0) diff_qty_14,
+		
+		IFNULL(SUM(b.qty_15), 0) qty_15,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '15')), 0) result_qty_15,
+		IFNULL(SUM(b.qty_15 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '15')), 0) diff_qty_15,
+		
+		IFNULL(SUM(b.qty_16), 0) qty_16,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '16')), 0) result_qty_16,
+		IFNULL(SUM(b.qty_16 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '16')), 0) diff_qty_16,		
+		
+		IFNULL(SUM(b.qty_17), 0) qty_17,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '17')), 0) result_qty_17,
+		IFNULL(SUM(b.qty_17 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '17')), 0) diff_qty_17,
+		
+		IFNULL(SUM(b.qty_18), 0) qty_18,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '18')), 0) result_qty_18,
+		IFNULL(SUM(b.qty_18 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '18')), 0) diff_qty_18,		
+		
+		IFNULL(SUM(b.qty_19), 0) qty_19,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '19')), 0) result_qty_19,
+		IFNULL(SUM(b.qty_19 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '19')), 0) diff_qty_19,
+		
+		IFNULL(SUM(b.qty_20), 0) qty_20,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '20')), 0) result_qty_20,
+		IFNULL(SUM(b.qty_20 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '20')), 0) diff_qty_20,
+
+		IFNULL(SUM(b.qty_21), 0) qty_21,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '21')), 0) result_qty_21,
+		IFNULL(SUM(b.qty_21 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '21')), 0) diff_qty_21,	
+		
+		IFNULL(SUM(b.qty_22), 0) qty_22,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '22')), 0) result_qty_22,
+		IFNULL(SUM(b.qty_22 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '22')), 0) diff_qty_22,
+		
+		IFNULL(SUM(b.qty_23), 0) qty_23,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '23')), 0) result_qty_23,
+		IFNULL(SUM(b.qty_23 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '23')), 0) diff_qty_23,
+		
+		IFNULL(SUM(b.qty_24), 0) qty_24,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '24')), 0) result_qty_24,
+		IFNULL(SUM(b.qty_24 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '24')), 0) diff_qty_24,
+		
+		IFNULL(SUM(b.qty_25), 0) qty_25,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '25')), 0) result_qty_25,
+		IFNULL(SUM(b.qty_25 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '25')), 0) diff_qty_25,
+		
+		IFNULL(SUM(b.qty_26), 0) qty_26,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '26')), 0) result_qty_26,
+		IFNULL(SUM(b.qty_26 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '26')), 0) diff_qty_26,
+		
+		IFNULL(SUM(b.qty_27), 0) qty_27,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '27')), 0) result_qty_27,
+		IFNULL(SUM(b.qty_27 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '27')), 0) diff_qty_27,
+		
+		IFNULL(SUM(b.qty_28), 0) qty_28,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '28')), 0) result_qty_28,
+		IFNULL(SUM(b.qty_28 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '28')), 0) diff_qty_28,
+		
+		IFNULL(SUM(b.qty_29), 0) qty_29,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '29')), 0) result_qty_29,
+		IFNULL(SUM(b.qty_29 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '29')), 0) diff_qty_29,
+		
+		IFNULL(SUM(b.qty_30), 0) qty_30,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '30')), 0) result_qty_30,
+		IFNULL(SUM(b.qty_30 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '30')), 0) diff_qty_30,
+		
+		IFNULL(SUM(b.qty_31), 0) qty_31,
+		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '31')), 0) result_qty_31,
+		IFNULL(SUM(b.qty_31 - (SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '31')), 0) diff_qty_31,
+				
+		
+        b.createuser,
+        b.createdate,
+        b.updateuser,
+        b.updatedate
+        
+	from vw_ma_item c 
+		LEFT JOIN (SELECT plan_year, plan_month, MAX(plan_degree) plan_degree FROM tb_manufacture_plan GROUP BY plan_year, plan_month) b0 ON b0.plan_year = LEFT({ym_ser},4) AND b0.plan_month = RIGHT({ym_ser}, 2)
+	   left join tb_manufacture_plan b ON b.plan_year = b0.plan_year AND b.plan_month = b0.plan_month AND b.plan_degree = b0.plan_degree AND b.prod_item_cd = c.item_cd
+
+
+    where 1 = 1
+      -- 조회조건
+      and c.item_type = 'PROD'
+      and c.use_yn = 'Y'
+      and c.plan_sort is not null
+      and (ifnull({prod_type1_ser}, '') = '' or c.prod_type1 = {prod_type1_ser})
+      and (ifnull({carcass_cd_ser}, '') = '' or c.carcass_cd like concat('%', {carcass_cd_ser}, '%'))
+    GROUP BY c.etc1, c.carcass_cd with rollup
+) a
+order by a.sort_no asc, 
+    case when a.etc1_temp is null and a.carcass_cd_temp is null then '99.9'
+		when a.carcass_cd_temp is null then concat(a.etc2, a.etc1_temp, '.5')
+        else concat(a.etc2, a.etc1_temp, '.0') end asc, ifnull(a.plan_sort, 999999) asc, a.sales_cd_temp asc
