@@ -2,11 +2,11 @@ SELECT
     {ym_ser} as ym_ser,
     {prod_type1_ser} prod_type1_ser,
     {carcass_cd_ser} carcass_cd_ser, 
-  
+    CURDATE() date_ymd,
     case when a.carcass_cd_temp is null then 'Y' else 'N' end readonly_yn,
-    case when a.etc1_temp is null and a.carcass_cd_temp is null then 'Total' else a.etc1_temp end etc1,
+    case when a.etc1_temp is null and a.carcass_cd_temp is null then '합계' else a.etc1_temp end etc1,
     case when a.etc1_temp is null and a.carcass_cd_temp is null then '' 
-        when a.carcass_cd_temp is null then 'SubTotal'
+        when a.carcass_cd_temp is null then '소계'
         else a.sales_cd_temp end sales_cd,
     case when a.carcass_cd_temp is null then null else a.yag_temp end yag,
     case when a.carcass_cd_temp is null then null else a.prod_type1_temp end prod_type1,
@@ -34,8 +34,8 @@ from (
     	
     	IFNULL(SUM(b.qty_sum), 0) month_plan,
     	IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd)) , 0) month_result,
-        ifnull((select ROUND(cost_amount, 0) from tb_ma_manufacture_cost where option = 'WT' and item_cd = c.item_cd order by updatedate desc limit 1),
-    	    (select ROUND(cost_amount, 0) from tb_ma_manufacture_cost where option = 'default' and item_cd = c.item_cd order by updatedate desc limit 1)
+        ifnull((select ifnull(ROUND(cost_amount, 0),0) from tb_ma_manufacture_cost where option = 'WT' and item_cd = c.item_cd order by updatedate desc limit 1),
+    	    (select ifnull(ROUND(cost_amount, 0),0) from tb_ma_manufacture_cost where option = 'default' and item_cd = c.item_cd order by updatedate desc limit 1)
     	) cost_amount,
 		IFNULL(SUM(b.qty_01), 0) qty_01,
 		IFNULL(SUM((SELECT sum(work_qty) FROM tb_manufacture_work WHERE left(work_date,4) = LEFT({ym_ser}, 4) AND DATE_FORMAT(work_date, '%m') = RIGHT({ym_ser}, 2) AND prod_item_cd = c.item_cd AND DATE_FORMAT(work_date, '%d') = '01')), 0) result_qty_01,
