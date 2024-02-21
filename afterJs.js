@@ -50,9 +50,8 @@ grid1.on("check", function (event) {
     const rows = grid1.getRows();
     for (let i = 0; i < rows.length; i++) {
       if (
-        rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]]
-        // &&
-        // rows[i][itmobj1["readonly_yn"]] == "N"
+        rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]] &&
+        rows[i][itmobj1["sales_cd"]] !== ""
       )
         grid1.check(i);
     }
@@ -65,9 +64,8 @@ grid1.on("uncheck", function (event) {
     const rows = grid1.getRows();
     for (let i = 0; i < rows.length; i++) {
       if (
-        rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]]
-        // &&
-        // rows[i][itmobj1["readonly_yn"]] == "N"
+        rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]] &&
+        rows[i][itmobj1["sales_cd"]] !== ""
       )
         grid1.uncheck(i);
     }
@@ -76,6 +74,10 @@ grid1.on("uncheck", function (event) {
 
 //for printing
 $("#print_btn_custom").on("click", function (event) {
+  sessionStorage.setItem(
+    "539_plan_ym",
+    nvl($("#" + itmobj1["ym_ser"]).val(), "")
+  );
   //   const selectedRow = grid1.getCheckedRows();
 
   //   if (selectedRow.length === 1) {

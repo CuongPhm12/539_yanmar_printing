@@ -1,3 +1,53 @@
+function getCurrentDate() {
+  const currentDate = new Date();
+
+  // Extract year, month, and day components
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Adding 1 because January is 0
+  const day = String(currentDate.getDate()).padStart(2, "0");
+
+  // Form the date string in yyyy.mm.dd format
+  const formattedDate = `${year}.${month}.${day}`;
+
+  return formattedDate;
+}
+
+const currentDate = getCurrentDate();
+$("#date_ym")
+  .text("출력일: " + currentDate)
+  .css("font-size", "18px");
+
+let ym_ser_text = sessionStorage.getItem("539_plan_ym");
+$("#ym_ser")
+  .text(ym_ser_text + "상품화비용")
+  .css("font-size", "25px");
+
+//rowspan
+$(document).ready(function () {
+  // Loop through each row with class "rowsrepeat"
+  $(".rowsrepeat").each(function (index) {
+    // Get the text content of the first td element within the current row
+    var currentText = $(this).find("td:first").text();
+    // If the currentText matches "외관" or "기타"
+    if (currentText === "외관" || currentText === "기타") {
+      // Get the number of rowspans needed
+      var rowspan = $(".rowsrepeat").filter(function () {
+        return $(this).find("td:first").text() === currentText;
+      }).length;
+      // If it's the first row with the value "외관" or "기타", set the rowspan
+      if (
+        index === 0 ||
+        $(this).prev().find("td:first").text() !== currentText
+      ) {
+        $(this).find("td:first").attr("rowspan", rowspan);
+      } else {
+        // If not, hide the current td element
+        $(this).find("td:first").hide();
+      }
+    }
+  });
+});
+
 $(document).ready(function () {
   // Target all cells in the "실적" column
   var cells_plan = $("table.headergrid1 td:nth-child(6)");
