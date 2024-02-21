@@ -12,41 +12,54 @@ function getCurrentDate() {
   return formattedDate;
 }
 
+function convertToKoreanDate(dateString) {
+  // Split the date string into year and month
+  const [year, month] = dateString.split("-");
+
+  // Convert the year to a 2-digit format
+  const shortYear = year.slice(2);
+
+  // Construct the Korean date string
+  const koreanDate = `${shortYear}년 ${month}월`;
+
+  return koreanDate;
+}
+
 const currentDate = getCurrentDate();
 $("#date_ym")
   .text("출력일: " + currentDate)
   .css("font-size", "18px");
-
-let ym_ser_text = sessionStorage.getItem("539_plan_ym");
+let ym_ser_text = convertToKoreanDate(sessionStorage.getItem("539_plan_ym"));
+console.log(ym_ser_text);
 $("#ym_ser")
   .text(ym_ser_text + "상품화비용")
   .css("font-size", "25px");
 
 //rowspan
-$(document).ready(function () {
-  // Loop through each row with class "rowsrepeat"
-  $(".rowsrepeat").each(function (index) {
-    // Get the text content of the first td element within the current row
-    var currentText = $(this).find("td:first").text();
-    // If the currentText matches "외관" or "기타"
-    if (currentText === "외관" || currentText === "기타") {
-      // Get the number of rowspans needed
-      var rowspan = $(".rowsrepeat").filter(function () {
-        return $(this).find("td:first").text() === currentText;
-      }).length;
-      // If it's the first row with the value "외관" or "기타", set the rowspan
-      if (
-        index === 0 ||
-        $(this).prev().find("td:first").text() !== currentText
-      ) {
-        $(this).find("td:first").attr("rowspan", rowspan);
-      } else {
-        // If not, hide the current td element
-        $(this).find("td:first").hide();
-      }
-    }
-  });
-});
+// $(document).ready(function () {
+//   // Loop through each row with class "rowsrepeat"
+//   $(".rowsrepeat").each(function (index) {
+//     // Get the text content of the first td element within the current row
+//     var currentText = $(this).find("td:first").text();
+//     // If the currentText matches "외관" or "기타"
+//     if (currentText === "외관" || currentText === "기타") {
+//       // Get the number of rowspans needed
+//       var rowspan = $(".rowsrepeat").filter(function () {
+//         return $(this).find("td:first").text() === currentText;
+//       }).length;
+//       // If it's the first row with the value "외관" or "기타", set the rowspan
+//       if (
+//         index === 0 ||
+//         $(this).prev().find("td:first").text() !== currentText
+//       ) {
+//         $(this).find("td:first").attr("rowspan", rowspan);
+//       } else {
+//         // If not, hide the current td element
+//         $(this).find("td:first").hide();
+//       }
+//     }
+//   });
+// });
 
 $(document).ready(function () {
   // Target all cells in the "실적" column
@@ -206,10 +219,10 @@ $(document).ready(function () {
   });
 
   // Fill the total values into the row with id "total"
-  $("#total").find("td:nth-child(5)").text(sumPlan.toLocaleString());
-  $("#total").find("td:nth-child(6)").text(sumActual.toLocaleString());
-  $("#total").find("td:nth-child(7)").text(sumUnitPrice.toLocaleString());
-  $("#total").find("td:nth-child(8)").text(sumAmount.toLocaleString());
+  $("#total").find("td:nth-child(2)").text(sumPlan.toLocaleString());
+  $("#total").find("td:nth-child(3)").text(sumActual.toLocaleString());
+  $("#total").find("td:nth-child(4)").text(sumUnitPrice.toLocaleString());
+  $("#total").find("td:nth-child(5)").text(sumAmount.toLocaleString());
   //====
   //FUNCTION FORMAT NUMBER
   function formatNumber(value) {
@@ -228,7 +241,24 @@ $(document).ready(function () {
   $("table.headergrid1 thead").remove();
   $("table.headergrid1 tbody").prepend(thead);
 
-  //Fill color for SubTotal
-  $('tr:has(td:contains("소계"))').css("background-color", "#bcd4ec");
-  $('tr:has(td:contains("합계"))').css("background-color", "#90acdc");
+  formatTableRows();
 });
+
+function formatTableRows() {
+  $('tr:has(td:contains("소계"))').each(function () {
+    $(this).css("background-color", "#bcd4ec"); // Set background color
+
+    // Hide the first 3 columns
+    $(this).find("td:nth-child(-n+3)").hide();
+
+    // Colspan next 4 columns, center align, and bold the remaining cell
+    var $subTotalCell = $(this).find("td:nth-child(4)");
+    $subTotalCell.attr("colspan", 4).css({
+      "text-align": "center",
+      "font-weight": "bold",
+    });
+  });
+
+  // Set background color for "합계" row
+  $('tr:has(td:contains("합계"))').css("background-color", "#90acdc");
+}
