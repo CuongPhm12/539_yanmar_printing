@@ -33,44 +33,47 @@ for (var i = 1; i <= max; i++) {
 }
 
 var gd1 = grid1.getRows();
-if (gd1.length > 0) {
-  grid1.check(0);
 
-  // 그리드 값이 0일때 투명처리
-  $(".tui-grid-cell-content")
-    .filter(function () {
-      return $(this).text() === "0";
-    })
-    .css("opacity", "0");
+if (gd1.length > 0) {
+  const rows = grid1.getRows();
+  for (let i = 0; i < rows.length; i++) {
+    grid1.check(i);
+  }
+  //     grid1.check(0);
+
+  //     // 그리드 값이 0일때 투명처리
+  //     $(".tui-grid-cell-content").filter(function() {
+  //         return $(this).text() === "0";
+  //     }).css("opacity", "0");
 }
 
-grid1.on("check", function (event) {
-  const value = grid1.getRow(event.rowKey);
-  if (value[itmobj1["etc1"]]) {
-    const rows = grid1.getRows();
-    for (let i = 0; i < rows.length; i++) {
-      if (
-        rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]] &&
-        rows[i][itmobj1["sales_cd"]] !== ""
-      )
-        grid1.check(i);
-    }
-  }
-});
-grid1.on("uncheck", function (event) {
-  //   console.log("abc");
-  const value = grid1.getRow(event.rowKey);
-  if (value[itmobj1["etc1"]]) {
-    const rows = grid1.getRows();
-    for (let i = 0; i < rows.length; i++) {
-      if (
-        rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]] &&
-        rows[i][itmobj1["sales_cd"]] !== ""
-      )
-        grid1.uncheck(i);
-    }
-  }
-});
+// grid1.on("check", function (event) {
+//   const value = grid1.getRow(event.rowKey);
+//   if (value[itmobj1["etc1"]]) {
+//     const rows = grid1.getRows();
+//     for (let i = 0; i < rows.length; i++) {
+//       if (
+//         rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]]
+//         && rows[i][itmobj1["sales_cd"]] !== ""
+//       )
+//         grid1.check(i);
+//     }
+//   }
+// });
+// grid1.on("uncheck", function (event) {
+// //   console.log("abc");
+//   const value = grid1.getRow(event.rowKey);
+//   if (value[itmobj1["etc1"]]) {
+//     const rows = grid1.getRows();
+//     for (let i = 0; i < rows.length; i++) {
+//       if (
+//         rows[i][itmobj1["etc1"]] == value[itmobj1["etc1"]]
+//         && rows[i][itmobj1["sales_cd"]] !== ""
+//       )
+//         grid1.uncheck(i);
+//     }
+//   }
+// });
 
 //for printing
 $("#print_btn_custom").on("click", function (event) {

@@ -1,3 +1,5 @@
+$(".headergrid1").parent().parent().css({ width: "fit-content" });
+// console.log($('.headergrid1').parent().parent().html())
 function getCurrentDate() {
   const currentDate = new Date();
 
@@ -30,36 +32,10 @@ $("#date_ym")
   .text("출력일: " + currentDate)
   .css("font-size", "18px");
 let ym_ser_text = convertToKoreanDate(sessionStorage.getItem("539_plan_ym"));
-console.log(ym_ser_text);
+
 $("#ym_ser")
   .text(ym_ser_text + "상품화비용")
   .css("font-size", "25px");
-
-//rowspan
-// $(document).ready(function () {
-//   // Loop through each row with class "rowsrepeat"
-//   $(".rowsrepeat").each(function (index) {
-//     // Get the text content of the first td element within the current row
-//     var currentText = $(this).find("td:first").text();
-//     // If the currentText matches "외관" or "기타"
-//     if (currentText === "외관" || currentText === "기타") {
-//       // Get the number of rowspans needed
-//       var rowspan = $(".rowsrepeat").filter(function () {
-//         return $(this).find("td:first").text() === currentText;
-//       }).length;
-//       // If it's the first row with the value "외관" or "기타", set the rowspan
-//       if (
-//         index === 0 ||
-//         $(this).prev().find("td:first").text() !== currentText
-//       ) {
-//         $(this).find("td:first").attr("rowspan", rowspan);
-//       } else {
-//         // If not, hide the current td element
-//         $(this).find("td:first").hide();
-//       }
-//     }
-//   });
-// });
 
 $(document).ready(function () {
   // Target all cells in the "실적" column
@@ -75,7 +51,8 @@ $(document).ready(function () {
   cells_plan.each(function () {
     var value = $(this).text();
     if (value === "" || value === null || value.trim() === "") {
-      $(this).text("0");
+      //   $(this).text("0");
+      $(this).parent().remove();
     }
   });
 
@@ -88,6 +65,9 @@ $(document).ready(function () {
 
   cells_price.each(function () {
     var value = $(this).text();
+    if (value === "" || value === null || value.trim() === "") {
+      $(this).text("0");
+    }
     if (value === "" || value === null || value.trim() === "") {
       $(this).text("0");
     }
@@ -203,12 +183,8 @@ $(document).ready(function () {
           .text()
           .replace(/[^0-9.-]+/g, "")
       );
-      sumUnitPrice += parseFloat(
-        $(this)
-          .find("td:nth-child(7)")
-          .text()
-          .replace(/[^0-9.-]+/g, "")
-      );
+      // sumUnitPrice += parseFloat($(this).find('td:nth-child(7)').text().replace(/[^0-9.-]+/g, ""));
+      $(this).find("td:nth-child(7)").text("");
       sumAmount += parseFloat(
         $(this)
           .find("td:nth-child(8)")
@@ -221,7 +197,7 @@ $(document).ready(function () {
   // Fill the total values into the row with id "total"
   $("#total").find("td:nth-child(2)").text(sumPlan.toLocaleString());
   $("#total").find("td:nth-child(3)").text(sumActual.toLocaleString());
-  $("#total").find("td:nth-child(4)").text(sumUnitPrice.toLocaleString());
+  // $('#total').find('td:nth-child(4)').text(sumUnitPrice.toLocaleString());
   $("#total").find("td:nth-child(5)").text(sumAmount.toLocaleString());
   //====
   //FUNCTION FORMAT NUMBER
@@ -236,7 +212,7 @@ $(document).ready(function () {
       return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
   }
-
+  //remove tag thead, replace equal tbody
   const thead = $("table.headergrid1 thead").html();
   $("table.headergrid1 thead").remove();
   $("table.headergrid1 tbody").prepend(thead);
@@ -246,8 +222,12 @@ $(document).ready(function () {
 
 function formatTableRows() {
   $('tr:has(td:contains("소계"))').each(function () {
-    $(this).css("background-color", "#bcd4ec"); // Set background color
-
+    // $(this).css('background-color', '#bcd4ec'); // Set background color
+    $(this).css({
+      "background-color": "#bcd4ec",
+      "text-align": "center",
+      "font-weight": "bold",
+    });
     // Hide the first 3 columns
     $(this).find("td:nth-child(-n+3)").hide();
 
@@ -260,5 +240,12 @@ function formatTableRows() {
   });
 
   // Set background color for "합계" row
-  $('tr:has(td:contains("합계"))').css("background-color", "#90acdc");
+  $('tr:has(td:contains("합계"))')
+    //   .css('background-color', '#90acdc');
+    .css({
+      "background-color": "#90acdc",
+      "text-align": "center",
+      "font-weight": "bold",
+      "font-size": "15px",
+    });
 }
